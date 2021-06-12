@@ -8,7 +8,7 @@ function Fishmoose:init (xPos, yPos)
     obj.radius = 4
     obj.speed = 300
 
-    obj.temp = 0
+    obj.angle = 0
 
     obj.mesh = { {-4, -15, 0, -25, 4, -15}, {-4, -15, 4, -15, 13, 0, 0, 38, -13, 0, -4, -15}, {-13, 0, -34, 17, -9, 11}, {13, 0, 34, 17, 9, 11} }
 
@@ -57,21 +57,32 @@ function Fishmoose:update (dt)
     self.xPos = self.xPos + xVel
     self.yPos = self.yPos + yVel
 
-    self.temp = self.temp + 4;
+    -- Update rotation
+    if (self.angle > -6) and (xDir > 0) then
+        self.angle = self.angle - dt * 90
+    elseif (self.angle < 6) and (xDir < 0) then
+        self.angle = self.angle + dt * 90
+    elseif self.angle + dt * 90 < 0 then
+        self.angle = self.angle + dt * 90
+    elseif self.angle - dt * 90 > 0 then
+        self.angle = self.angle - dt * 90
+    else
+        self.angle = 0
+    end
 end
 
 function Fishmoose:draw ()
     love.graphics.setColor(1, 0, 1)
     love.graphics.circle("fill", self.xPos, self.yPos, self.radius, 9)
 
-    local tempRad = (self.temp * 2 * math.pi) / 360
+    local angleRad = (self.angle * 2 * math.pi) / 360
 
     -- Transform and render mesh
     for submeshIndex = 1, #(self.mesh) do
         local transMesh = {}
         for vertexIndex = 1, #(self.mesh[submeshIndex]), 2 do
-            transMesh[vertexIndex] = self.mesh[submeshIndex][vertexIndex] * math.cos(tempRad) + self.mesh[submeshIndex][vertexIndex + 1] * math.sin(tempRad) + self.xPos;
-            transMesh[vertexIndex + 1] = self.mesh[submeshIndex][vertexIndex] * -math.sin(tempRad) + self.mesh[submeshIndex][vertexIndex + 1] * math.cos(tempRad) + self.yPos;
+            transMesh[vertexIndex] = self.mesh[submeshIndex][vertexIndex] * math.cos(angleRad) + self.mesh[submeshIndex][vertexIndex + 1] * math.sin(angleRad) + self.xPos;
+            transMesh[vertexIndex + 1] = self.mesh[submeshIndex][vertexIndex] * -math.sin(angleRad) + self.mesh[submeshIndex][vertexIndex + 1] * math.cos(angleRad) + self.yPos;
         end
         love.graphics.line(transMesh)
     end
