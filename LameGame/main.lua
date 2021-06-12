@@ -7,9 +7,9 @@ local enemyBullets = {}
 
 local fishmoose = {}
 
-local tempTimer = 0
+local spawnTimer = 0
 
--- Main
+-- Love calbacks
 function love.load()
     love.window.setTitle("Fishmoose VS Bossbird")
     love.window.setMode(480, 640, {})
@@ -19,15 +19,26 @@ function love.load()
 end
 
 function love.update(dt)
-    tempTimer = tempTimer + 1;
-    if tempTimer >= 3 then
+    -- spawn
+    spawnTimer = spawnTimer + 1;
+    if spawnTimer >= 10 then
         enemyBulletAmount = enemyBulletAmount + 1;
-        enemyBullets[enemyBulletAmount] = Bullet:init(love.graphics.getPixelWidth() / 2, love.graphics.getPixelHeight() / 2, 40 + math.random() * 20, math.random() * 360, 3 + math.random() * 5)
-        tempTimer = 0
+        enemyBullets[enemyBulletAmount] = Bullet:init(math.random(love.graphics.getPixelWidth()), 0, 80 + math.random() * 20, math.random(50) - 115, math.random(10, 20))
+        spawnTimer = 0
     end
+
+    -- update
+    fishmoose:update(dt)
 
     for i = 1, enemyBulletAmount do
         enemyBullets[i]:update(dt)
+    end
+
+    -- fishmoose/bullet collision
+    for i = 1, enemyBulletAmount do
+        if fishmoose:checkCollision(enemyBullets[i]) then
+            enemyBullets[i].active = false;
+        end
     end
 
     -- remove inactive bullets
@@ -37,14 +48,16 @@ function love.update(dt)
             enemyBulletAmount = enemyBulletAmount - 1
         end
     end
+
+    
 end
 
 function love.draw()
+    fishmoose:draw()
+
     for i = 1, enemyBulletAmount do
         enemyBullets[i]:draw()
     end
-
-    fishmoose:draw()
 
     love.graphics.print(love.timer.getFPS(), 10, 10);
 end

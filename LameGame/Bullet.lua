@@ -12,7 +12,7 @@ function Bullet:init (xPos, yPos, speed, dir, radius)
 
     local dirRad = (dir * 2 * math.pi) / 360
     obj.xVel = math.cos(dirRad) * speed
-    obj.yVel = math.sin(dirRad) * speed
+    obj.yVel = -math.sin(dirRad) * speed
 
     return setmetatable(obj, Bullet)
 end
