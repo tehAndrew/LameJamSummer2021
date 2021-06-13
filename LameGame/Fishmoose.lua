@@ -1,4 +1,4 @@
-Fishmoose = {}
+local Fishmoose = {}
 Fishmoose.__index = Fishmoose
 
 function Fishmoose:init (xPos, yPos)
@@ -6,9 +6,10 @@ function Fishmoose:init (xPos, yPos)
     obj.xPos = xPos
     obj.yPos = yPos
     obj.radius = 4
-    obj.speed = 300
+    obj.speed = 270
 
     obj.angle = 0
+    obj.angle2 = 0
 
     obj.mesh = { {-4, -15, 0, -25, 4, -15}, {-4, -15, 4, -15, 13, 0, 0, 38, -13, 0, -4, -15}, {-13, 0, -34, 17, -9, 11}, {13, 0, 34, 17, 9, 11} }
 
@@ -59,30 +60,50 @@ function Fishmoose:update (dt)
 
     -- Update rotation
     if (self.angle > -6) and (xDir > 0) then
-        self.angle = self.angle - dt * 90
+        self.angle = self.angle - dt * 80
     elseif (self.angle < 6) and (xDir < 0) then
-        self.angle = self.angle + dt * 90
-    elseif self.angle + dt * 90 < 0 then
-        self.angle = self.angle + dt * 90
-    elseif self.angle - dt * 90 > 0 then
-        self.angle = self.angle - dt * 90
+        self.angle = self.angle + dt * 80
+    elseif self.angle + dt * 80 < 0 then
+        self.angle = self.angle + dt * 80
+    elseif self.angle - dt * 80 > 0 then
+        self.angle = self.angle - dt * 80
     else
         self.angle = 0
     end
+
+    if (self.angle2 < 40) and (yDir < 0) then
+        self.angle2 = self.angle2 + dt * 250
+    elseif self.angle2 - dt * 250 > 0 then
+        self.angle2 = self.angle2 - dt * 250
+    else
+        self.angle2 = 0
+    end
+
 end
 
 function Fishmoose:draw ()
     love.graphics.setColor(1, 0, 1)
     love.graphics.circle("fill", self.xPos, self.yPos, self.radius, 9)
+    love.graphics.setLineJoin("bevel")
 
     local angleRad = (self.angle * 2 * math.pi) / 360
+    local angleRad2 = (self.angle2 * 2 * math.pi) / 360
 
-    -- Transform and render mesh
+    -- Transform and render mesh 2D
+    --
+    --  Z rotation matrix 2D
+    --  | cos(angleRad)  sin(angleRad) |
+    --  | -sin(angleRad) cos(angleRad) |
+    --
+    --  X rotation matrix 2D
+    --  | 1 0              |
+    --  | 0 cos(angleRad2) |
+    --
     for submeshIndex = 1, #(self.mesh) do
         local transMesh = {}
         for vertexIndex = 1, #(self.mesh[submeshIndex]), 2 do
-            transMesh[vertexIndex] = self.mesh[submeshIndex][vertexIndex] * math.cos(angleRad) + self.mesh[submeshIndex][vertexIndex + 1] * math.sin(angleRad) + self.xPos;
-            transMesh[vertexIndex + 1] = self.mesh[submeshIndex][vertexIndex] * -math.sin(angleRad) + self.mesh[submeshIndex][vertexIndex + 1] * math.cos(angleRad) + self.yPos;
+            transMesh[vertexIndex] = self.mesh[submeshIndex][vertexIndex] * math.cos(angleRad) + self.mesh[submeshIndex][vertexIndex + 1] * math.sin(angleRad) * math.cos(angleRad2) + self.xPos;
+            transMesh[vertexIndex + 1] = self.mesh[submeshIndex][vertexIndex] * -math.sin(angleRad) + self.mesh[submeshIndex][vertexIndex + 1] * math.cos(angleRad) * math.cos(angleRad2) + self.yPos;
         end
         love.graphics.line(transMesh)
     end

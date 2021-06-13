@@ -21,9 +21,9 @@ end
 function love.update(dt)
     -- spawn
     spawnTimer = spawnTimer + 1;
-    if spawnTimer >= 10 then
+    if spawnTimer >= 2 then
         enemyBulletAmount = enemyBulletAmount + 1;
-        enemyBullets[enemyBulletAmount] = Bullet:init(math.random(love.graphics.getPixelWidth()), 0, 80 + math.random() * 20, math.random(50) - 115, math.random(10, 20))
+        enemyBullets[enemyBulletAmount] = Bullet:init(math.random(love.graphics.getPixelWidth()), 0, 80 + math.random() * 50, math.random(50) - 115, math.random(5, 7))
         spawnTimer = 0
     end
 

@@ -28,7 +28,7 @@ end
 
 function Bullet:draw ()
     love.graphics.setColor(1, 1, 1)
-    love.graphics.circle("fill", self.xPos, self.yPos, self.radius, 20)
+    love.graphics.circle("fill", self.xPos, self.yPos, self.radius, 10)
 end
 
 return Bullet
