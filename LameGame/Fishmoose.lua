@@ -64,26 +64,26 @@ function Fishmoose:update (dt)
     self.yPos = self.yPos + yVel
 
     -- Update rotation
-    if (self.angle > -6) and (xDir > 0) then
-        self.angle = self.angle - dt * 80
-    elseif (self.angle < 6) and (xDir < 0) then
-        self.angle = self.angle + dt * 80
-    elseif self.angle + dt * 80 < 0 then
-        self.angle = self.angle + dt * 80
-    elseif self.angle - dt * 80 > 0 then
-        self.angle = self.angle - dt * 80
+    if (self.angle > -8) and (xDir > 0) then
+        self.angle = self.angle - 0.8
+    elseif (self.angle < 8) and (xDir < 0) then
+        self.angle = self.angle + 0.8
+    elseif self.angle + 0.8 < 0 then
+        self.angle = self.angle + 0.8
+    elseif self.angle - 0.8 > 0 then
+        self.angle = self.angle - 0.8
     else
         self.angle = 0
     end
 
-    if (self.angle2 > -25) and (yDir > 0) then
-        self.angle2 = self.angle2 - dt * 250
-    elseif (self.angle2 < 25) and (yDir < 0) then
-        self.angle2 = self.angle2 + dt * 250
-    elseif self.angle2 + dt * 250 < 0 then
-        self.angle2 = self.angle2 + dt * 250
-    elseif self.angle2 - dt * 250 > 0 then
-        self.angle2 = self.angle2 - dt * 250
+    if (self.angle2 > -32) and (yDir > 0) then
+        self.angle2 = self.angle2 - 3.2
+    elseif (self.angle2 < 32) and (yDir < 0) then
+        self.angle2 = self.angle2 + 3.2
+    elseif self.angle2 + 3.2 < 0 then
+        self.angle2 = self.angle2 + 3.2
+    elseif self.angle2 - 3.2 > 0 then
+        self.angle2 = self.angle2 - 3.2
     else
         self.angle2 = 0
     end
@@ -95,10 +95,10 @@ function Fishmoose:draw ()
     love.graphics.circle("fill", self.xPos, self.yPos, self.radius, 9)
 
     love.graphics.setColor(1, 0, 1)
-    self.beakMesh:xRotate(self.angle2):yRotate(self.angle * 4):zRotate(self.angle):translate(self.xPos + self.angle / 3, self.yPos + self.angle2 / 10):draw()
-    self.bodyMesh:xRotate(self.angle2):yRotate(self.angle * 4):zRotate(self.angle):translate(self.xPos + self.angle / 3, self.yPos + self.angle2 / 10):draw()
-    self.leftWingMesh:xRotate(self.angle2):yRotate(self.angle * 4):zRotate(self.angle):translate(self.xPos + self.angle / 3, self.yPos + self.angle2 / 10):draw()
-    self.rightWingMesh:xRotate(self.angle2):yRotate(self.angle * 4):zRotate(self.angle):translate(self.xPos + self.angle / 3, self.yPos + self.angle2 / 10):draw()
+    self.beakMesh:xRotate(self.angle2):yRotate(self.angle * 4):zRotate(self.angle):translate(self.xPos + self.angle / 4, self.yPos + self.angle2 / 16):draw()
+    self.bodyMesh:xRotate(self.angle2):yRotate(self.angle * 4):zRotate(self.angle):translate(self.xPos + self.angle / 4, self.yPos + self.angle2 / 16):draw()
+    self.leftWingMesh:xRotate(self.angle2):yRotate(self.angle * 4):zRotate(self.angle):translate(self.xPos + self.angle / 4, self.yPos + self.angle2 / 16):draw()
+    self.rightWingMesh:xRotate(self.angle2):yRotate(self.angle * 4):zRotate(self.angle):translate(self.xPos + self.angle / 4, self.yPos + self.angle2 / 16):draw()
 end
 
 function Fishmoose:checkCollision (bullet)
