@@ -1,6 +1,4 @@
--- Test making Bullet local
-
-Bullet = {}
+local Bullet = {}
 Bullet.__index = Bullet
 
 function Bullet:init (xPos, yPos, speed, dir, radius)

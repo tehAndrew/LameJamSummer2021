@@ -1,60 +1,69 @@
 local Mesh = {}
 Mesh.__index = Mesh
 
-function Mesh:init (...)
+function Mesh:create(mesh)
     local obj = {}
 
-    for i = 1, arg.n do
-        assert(type(arg[i]) == "table", "Arg " .. i .. " is not a table.")
-        assert(#arg[i] % 2 == 0, "Arg " .. i .. " is not a table with an even number of elements.")
-        obj.submesh[i] = arg[i]
-    end
+    assert(type(mesh) == "table", "Mesh is not a table.")
+    assert(#mesh % 2 == 0, "Mesh is not a table with an even number of elements.")
+    obj.mesh = mesh
 
     return setmetatable(obj, Mesh)
 end
 
-function Mesh:translateSubmesh (submeshIndex, xTrans, yTrans)
+function Mesh:translate(xTrans, yTrans)
     local transMesh = {}
     
-    for i = 1, #(self.submesh) - 1, 2 do
+    for i = 1, #(self.mesh) - 1, 2 do
         local xVert, yVert = i, i + 1
-        transMesh[xVert] = self.submesh[submeshIndex][xVert] + xTrans
-        transMesh[yVert] = self.submesh[submeshIndex][yVert] + yTrans
+        transMesh[xVert] = self.mesh[xVert] + xTrans
+        transMesh[yVert] = self.mesh[yVert] + yTrans
     end
 
-    return transMesh
+    return Mesh:create(transMesh)
 end
--- Transform and render mesh 2D
-    --
-    --  Z rotation matrix 2D
-    --  | cos(angleRad)  sin(angleRad) |
-    --  | -sin(angleRad) cos(angleRad) |
-    --
-    --  X rotation matrix 2D
-    --  | 1 0              |
-    --  | 0 cos(angleRad2) |
-function Mesh:zRotateSubmesh (submeshIndex, angle)
+
+function Mesh:xRotate(angle)
     local transMesh = {}
     
-    for i = 1, #(self.submesh) - 1, 2 do
+    for i = 1, #(self.mesh) - 1, 2 do
         local xVert, yVert = i, i + 1
         local angleRad = (angle * 2 * math.pi) / 360
-        transMesh[xVert] = self.mesh[submeshIndex][xVert] * math.cos(angleRad) - self.mesh[submeshIndex][yVert] * math.sin(angleRad)
-        transMesh[yVert] = self.mesh[submeshIndex][xVert] * math.sin(angleRad) + self.mesh[submeshIndex][yVert] * math.cos(angleRad)
+        transMesh[xVert] = self.mesh[xVert]
+        transMesh[yVert] = self.mesh[yVert] * math.cos(angleRad)
     end
 
-    return transMesh
+    return Mesh:create(transMesh)
 end
 
-function Mesh:xRotateSubmesh (submeshIndex, angle)
+function Mesh:yRotate(angle)
     local transMesh = {}
     
-    for i = 1, #(self.submesh) - 1, 2 do
+    for i = 1, #(self.mesh) - 1, 2 do
         local xVert, yVert = i, i + 1
         local angleRad = (angle * 2 * math.pi) / 360
-        transMesh[xVert] = self.mesh[submeshIndex][xVert]
-        transMesh[yVert] = self.mesh[submeshIndex][yVert] * math.cos(angleRad);
+        transMesh[xVert] = self.mesh[xVert] * math.cos(angleRad)
+        transMesh[yVert] = self.mesh[yVert]
     end
 
-    return transMesh
+    return Mesh:create(transMesh)
 end
+
+function Mesh:zRotate(angle)
+    local transMesh = {}
+    
+    for i = 1, #(self.mesh) - 1, 2 do
+        local xVert, yVert = i, i + 1
+        local angleRad = (angle * 2 * math.pi) / 360
+        transMesh[xVert] = self.mesh[xVert] * math.cos(angleRad) + self.mesh[yVert] * math.sin(angleRad)
+        transMesh[yVert] = self.mesh[xVert] * -math.sin(angleRad) + self.mesh[yVert] * math.cos(angleRad)
+    end
+
+    return Mesh:create(transMesh)
+end
+
+function Mesh:draw()
+    love.graphics.line(self.mesh)
+end
+
+return Mesh
