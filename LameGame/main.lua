@@ -1,8 +1,6 @@
 -- Imports
 local Bullet = require("Bullet")
 local Fishmoose = require("Fishmoose")
-local Mesh2 = require("Mesh2")
-local T = require("Transform3D")
 
 local enemyBulletAmount = 0
 local enemyBullets = {}
@@ -11,16 +9,13 @@ local fishmoose = {}
 
 local spawnTimer = 0
 
-local angle1, angle2, angle3 = 0, 0, 0
-local x, y = 0, 0
-
 -- Love calbacks
 function love.load()
     love.window.setTitle("Fishmoose VS Bossbird")
     love.window.setMode(480, 640, {})
     math.randomseed(os.time());
 
-    fishmoose = Fishmoose:init(0, 0);
+    fishmoose = Fishmoose:init(love.graphics.getPixelWidth() / 2, love.graphics.getPixelHeight() / 2);
 end
 
 function love.update(dt)
@@ -28,7 +23,7 @@ function love.update(dt)
     spawnTimer = spawnTimer + 1;
     if spawnTimer >= 10 then
         enemyBulletAmount = enemyBulletAmount + 1
-        enemyBullets[enemyBulletAmount] = Bullet:init(math.random(love.graphics.getPixelWidth()), 0, 80 + math.random() * 50, math.random(50) - 115, math.random(5, 7))
+        enemyBullets[enemyBulletAmount] = Bullet:init(math.random(love.graphics.getPixelWidth()), 0, 80 + math.random() * 50, math.random(50) - 115, math.random(10, 15))
         spawnTimer = 0
     end
 

@@ -1,4 +1,4 @@
-local Mesh = require("Mesh2")
+local Model = require("Model")
 local Transform3D = require("Transform3D")
 
 local Fishmoose = {}
@@ -14,7 +14,7 @@ function Fishmoose:init (xPos, yPos)
     obj.angle = 0
     obj.angle2 = 0
 
-    obj.mesh = Mesh2:init({{-20, 0, -4}, {-5, -20, -4}, {0, 0, 10}, {20, 0, -4}, {5, -20, -4}, {0, -15, 4}, {0, -40, -14}, {0, 55, -10}, {-50, 30, -10}, {-17, 17, -10}, {50, 30, -10}, {17, 17, -10}}, {1, 2, 3, 3, 5, 4, 3, 2, 6, 3, 6, 5, 2, 7, 6, 6, 7, 5, 1, 3, 8, 8, 3, 4, 9, 1, 10, 12, 4, 11})
+    obj.model = Model:init({{-20, 0, -4 + 10}, {-5, -20, -4 + 10}, {0, 0, 10 + 10}, {20, 0, -4 + 10}, {5, -20, -4 + 10}, {0, -15, 4 + 10}, {0, -40, -7 + 10}, {0, 55, -10 + 10}, {-50, 30, -10 + 10}, {-17, 17, -10 + 10}, {50, 30, -10 + 10}, {17, 17, -10 + 10}}, {1, 2, 3, 3, 5, 4, 3, 2, 6, 3, 6, 5, 2, 7, 6, 6, 7, 5, 1, 3, 8, 8, 3, 4, 9, 1, 10, 12, 4, 11})
 
     return setmetatable(obj, Fishmoose)
 end
@@ -90,11 +90,11 @@ end
 
 function Fishmoose:draw ()
     love.graphics.setColor(1, 1, 1)
-    love.graphics.circle("fill", self.xPos, self.yPos, self.radius, 9)
+    --love.graphics.circle("fill", self.xPos, self.yPos, self.radius, 9)
 
     local pos = {self.xPos, self.yPos}
-    self.mesh:setTransform(Transform3D:init():xRotate((self.angle2 * 2 * math.pi) / 360):yRotate((self.angle * 2 * math.pi) / 360):zRotate((self.angle * 2 * math.pi) / 360), pos);
-    self.mesh:draw()
+    self.model:setTransform(Transform3D:init():xRotate((self.angle2 * 2 * math.pi) / 360):yRotate((self.angle * 2 * math.pi) / 360):zRotate((self.angle * 2 * math.pi) / 360), pos);
+    self.model:draw()
 
 
 end

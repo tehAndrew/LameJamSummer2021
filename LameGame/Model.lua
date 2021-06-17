@@ -1,9 +1,9 @@
-Mesh2 = {}
-Mesh2.__index = Mesh2
+Model = {}
+Model.__index = Model
 
 local T = require("Transform3D")
 
-function Mesh2:init(vertices, indices)
+function Model:init(vertices, indices)
     local obj = {}
 
     local attrLayout = {{"VertexPosition", "float", 3}} -- VertexPosition will be interpreted as vertex position automatically by glsl
@@ -37,7 +37,7 @@ function Mesh2:init(vertices, indices)
     #ifdef VERTEX
     vec4 position(mat4 transform_projection, vec4 vertex_position)
     {   
-        mat4 proj_matrix = orthoProj(0.f, 480.f, 640.f, 0.f, -50.f, 50.f);
+        mat4 proj_matrix = orthoProj(0.f, love_ScreenSize.x, love_ScreenSize.y, 0.f, -50.f, 50.f);
 
         vec4 trans_vert_pos = proj_matrix * TransformMatrix * vertex_position;
         depth = trans_vert_pos.z;
@@ -60,14 +60,14 @@ function Mesh2:init(vertices, indices)
 
     obj.shader = love.graphics.newShader(shaderCode)
 
-    return setmetatable(obj, Mesh2)
+    return setmetatable(obj, Model)
 end
 
-function Mesh2:setTransform(t, pos)
+function Model:setTransform(t, pos)
     self.transform:setMatrix(t.matrix[1][1], t.matrix[1][2], t.matrix[1][3], pos[1], t.matrix[2][1], t.matrix[2][2], t.matrix[2][3], pos[2], t.matrix[3][1], t.matrix[3][2], t.matrix[3][3], 0, 0, 0, 0, 1)
 end
 
-function Mesh2:draw()
+function Model:draw()
     love.graphics.push("all")
 
     love.graphics.setShader(self.shader)
@@ -77,4 +77,4 @@ function Mesh2:draw()
 
 end
 
-return Mesh2
+return Model
