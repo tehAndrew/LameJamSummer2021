@@ -1,3 +1,8 @@
+-- Globals
+require("G_ResourceLoader")
+
+G_Debug = true
+
 -- Imports
 local Bullet = require("Bullet")
 local Fishmoose = require("Fishmoose")
