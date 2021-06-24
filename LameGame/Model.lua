@@ -13,8 +13,8 @@ function Model:init(meshName)
     local obj = {}
     
     obj.transform = love.math.newTransform(0, 0) -- identity transform
-    obj.mesh = G_ResourceLoader.loadMeshResource("ShipMesh")
-    obj.shader = G_ResourceLoader.loadShaderResource("MeshShader")
+    obj.mesh = G_ResourceLoader.getResource("mesh", "ShipMesh")
+    obj.shader = G_ResourceLoader.getResource("shader", "MeshShader")
 
     return setmetatable(obj, Model)
 end

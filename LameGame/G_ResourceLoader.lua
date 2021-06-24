@@ -32,7 +32,6 @@ local function loadMesh(meshName)
     debug(precondition, type(meshName) == "string", "Argument 1 must be of type 'string'.")
 
     local meshData = loadAndExecuteLuaChunk("Meshes/" .. meshName .. ".lua")
-    
 
     local attrLayout = {{"VertexPosition", "float", 3}} -- VertexPosition will be interpreted as vertex position automatically by glsl
     local vertices = meshData.vertices
@@ -46,26 +45,33 @@ end
 
 -- Public
 G_ResourceLoader = {}
-G_ResourceLoader.shaders = {}
-G_ResourceLoader.meshes = {}
+G_ResourceLoader.shader = {}
+G_ResourceLoader.mesh = {}
 
+-- Load shader resource from the shader folder.
 function G_ResourceLoader.loadShaderResource(shaderName)
     debug(precondition, type(shaderName) == "string", "Argument 1 must be of type 'string'.")
 
-    if G_ResourceLoader.shaders[shaderName] == nil then
-        G_ResourceLoader.shaders[shaderName] = loadShader(shaderName)
+    if G_ResourceLoader.shader[shaderName] == nil then
+        G_ResourceLoader.shader[shaderName] = loadShader(shaderName)
     end
-
-    return G_ResourceLoader.shaders[shaderName]
 end
 
+-- Load mesh resource from the mesh folder.
 function G_ResourceLoader.loadMeshResource(meshName)
     debug(precondition, type(meshName) == "string", "Argument 1 must be of type 'string'.")
 
-    if G_ResourceLoader.meshes[meshName] == nil then
-        G_ResourceLoader.meshes[meshName] = loadMesh(meshName)
+    if G_ResourceLoader.mesh[meshName] == nil then
+        G_ResourceLoader.mesh[meshName] = loadMesh(meshName)
     end
-
-    return G_ResourceLoader.meshes[meshName]
 end
 
+-- Retrieve loaded resource.
+function G_ResourceLoader.getResource(resType, resName)
+    debug(precondition, type(resType) == "string", "Argument 1 must be of type 'string'.")
+    debug(precondition, type(resName) == "string", "Argument 2 must be of type 'string'.")
+
+    debug(assertExpr, not (G_ResourceLoader[resType][resName] == nil), resType .. "-" .. resName .. "has not been loaded.")
+
+    return G_ResourceLoader[resType][resName]
+end

@@ -16,9 +16,12 @@ local spawnTimer = 0
 
 -- Love calbacks
 function love.load()
-    love.window.setTitle("Fishmoose VS Bossbird")
+    love.window.setTitle("Bullet Hell")
     love.window.setMode(480, 640, {})
     math.randomseed(os.time());
+
+    G_ResourceLoader.loadMeshResource("ShipMesh")
+    G_ResourceLoader.loadShaderResource("MeshShader")
 
     fishmoose = Fishmoose:init(love.graphics.getPixelWidth() / 2, love.graphics.getPixelHeight() / 2);
 end
