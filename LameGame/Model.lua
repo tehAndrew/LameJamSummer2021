@@ -20,9 +20,7 @@ function Model:init(meshName)
 end
 
 function Model:setTransform(t)
-    if G_Debug then
-        precondition(Transform3D.isValid(t), "Argument 1 is not of type 'Transform3D'.")
-    end
+    debug(precondition, Transform3D.isValid(t), "Argument 1 is not of type 'Transform3D'.")
 
     self.transform:setMatrix(t.matrix[1][1], t.matrix[1][2], t.matrix[1][3], t.matrix[1][4], t.matrix[2][1], t.matrix[2][2], t.matrix[2][3], t.matrix[2][4], t.matrix[3][1], t.matrix[3][2], t.matrix[3][3], t.matrix[3][4], 0, 0, 0, 1)
 end

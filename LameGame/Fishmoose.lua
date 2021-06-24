@@ -92,10 +92,12 @@ function Fishmoose:draw ()
     love.graphics.setColor(1, 1, 1)
     love.graphics.circle("fill", self.xPos, self.yPos, self.radius, 9)
 
-    self.model:setTransform(Transform3D.init():translate(self.xPos, self.yPos):xRotate((self.angle2 * 2 * math.pi) / 360):yRotate((self.angle * 2 * math.pi) / 360):zRotate((self.angle * 2 * math.pi) / 360))
+    local toRad = function(x)
+        return (x * 2 * math.pi) / 360
+    end
+
+    self.model:setTransform(Transform3D.init():translate(self.xPos, self.yPos):xRotate(toRad(self.angle2)):yRotate(toRad(self.angle)):zRotate(toRad(self.angle)))
     self.model:draw()
-
-
 end
 
 function Fishmoose:checkCollision (bullet)

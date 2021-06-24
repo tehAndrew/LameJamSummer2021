@@ -52,18 +52,18 @@ G_ResourceLoader.mesh = {}
 function G_ResourceLoader.loadShaderResource(shaderName)
     debug(precondition, type(shaderName) == "string", "Argument 1 must be of type 'string'.")
 
-    if G_ResourceLoader.shader[shaderName] == nil then
-        G_ResourceLoader.shader[shaderName] = loadShader(shaderName)
-    end
+    debug(assertExpr, G_ResourceLoader.shader[shaderName] == nil, shaderName .. " shader resource has already been loaded.")
+
+    G_ResourceLoader.shader[shaderName] = loadShader(shaderName)
 end
 
 -- Load mesh resource from the mesh folder.
 function G_ResourceLoader.loadMeshResource(meshName)
     debug(precondition, type(meshName) == "string", "Argument 1 must be of type 'string'.")
 
-    if G_ResourceLoader.mesh[meshName] == nil then
-        G_ResourceLoader.mesh[meshName] = loadMesh(meshName)
-    end
+    debug(assertExpr, G_ResourceLoader.shader[meshName] == nil, meshName .. " mesh resource has already been loaded.")
+
+    G_ResourceLoader.mesh[meshName] = loadMesh(meshName)
 end
 
 -- Retrieve loaded resource.
@@ -71,7 +71,7 @@ function G_ResourceLoader.getResource(resType, resName)
     debug(precondition, type(resType) == "string", "Argument 1 must be of type 'string'.")
     debug(precondition, type(resName) == "string", "Argument 2 must be of type 'string'.")
 
-    debug(assertExpr, not (G_ResourceLoader[resType][resName] == nil), resType .. "-" .. resName .. "has not been loaded.")
+    debug(assertExpr, G_ResourceLoader[resType][resName] ~= nil, resName .. " " .. resType .. " resource has not been loaded.")
 
     return G_ResourceLoader[resType][resName]
 end
