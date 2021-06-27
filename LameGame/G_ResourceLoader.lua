@@ -1,6 +1,6 @@
 local Test = require("Test")
 
-local debug, precondition, assertExpr = Test.debug, Test.precondition, Test.assertExpr
+local debug, preconditionTypeCheck, assertExpr = Test.debug, Test.preconditionTypeCheck, Test.assertExpr
 
 -- Private
 local function loadAndExecuteLuaChunk(filepath)
@@ -14,7 +14,7 @@ local function loadAndExecuteLuaChunk(filepath)
 end
 
 local function loadShader(shaderName)
-    debug(precondition, type(shaderName) == "string", "Argument 1 must be of type 'string'.")
+    debug(preconditionTypeCheck, {shaderName}, {'string'})
 
     -- Load .lua file
     local sourceCode = loadAndExecuteLuaChunk("Shaders/" .. shaderName .. ".lua")
@@ -29,7 +29,7 @@ end
 
 -- Todo verify input
 local function loadMesh(meshName)
-    debug(precondition, type(meshName) == "string", "Argument 1 must be of type 'string'.")
+    debug(preconditionTypeCheck, {meshName}, {'string'})
 
     local meshData = loadAndExecuteLuaChunk("Meshes/" .. meshName .. ".lua")
 
@@ -50,7 +50,7 @@ G_ResourceLoader.mesh = {}
 
 -- Load shader resource from the shader folder.
 function G_ResourceLoader.loadShaderResource(shaderName)
-    debug(precondition, type(shaderName) == "string", "Argument 1 must be of type 'string'.")
+    debug(preconditionTypeCheck, {shaderName}, {'string'})
 
     debug(assertExpr, G_ResourceLoader.shader[shaderName] == nil, shaderName .. " shader resource has already been loaded.")
 
@@ -59,7 +59,7 @@ end
 
 -- Load mesh resource from the mesh folder.
 function G_ResourceLoader.loadMeshResource(meshName)
-    debug(precondition, type(meshName) == "string", "Argument 1 must be of type 'string'.")
+    debug(preconditionTypeCheck, {meshName}, {'string'})
 
     debug(assertExpr, G_ResourceLoader.shader[meshName] == nil, meshName .. " mesh resource has already been loaded.")
 
@@ -68,8 +68,7 @@ end
 
 -- Retrieve loaded resource.
 function G_ResourceLoader.getResource(resType, resName)
-    debug(precondition, type(resType) == "string", "Argument 1 must be of type 'string'.")
-    debug(precondition, type(resName) == "string", "Argument 2 must be of type 'string'.")
+    debug(preconditionTypeCheck, {resType, resName}, {'string', 'string'})
 
     debug(assertExpr, G_ResourceLoader[resType] ~= nil, "'" .. resType .. "'" .. " is not a valid type of resource.")
     debug(assertExpr, G_ResourceLoader[resType][resName] ~= nil, resName .. " " .. resType .. " resource has not been loaded.")
