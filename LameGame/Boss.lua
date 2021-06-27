@@ -1,10 +1,13 @@
+local Tween = require("External/tween/tween")
+
 local Boss = {}
 Boss.__index = Boss
 
-function Boss:init(xPos, yPos)
+function Boss:init(_xPos, _yPos)
     local obj = {}
-    obj.xPos = xPos
-    obj.yPos = yPos
+    obj.xPos = _xPos
+    obj.yPos = _yPos
+    obj.posTween = Tween.new(10, obj, {xPos = 5})
     obj.tempTime = 0
     obj.radius = 10
 
@@ -17,7 +20,9 @@ function Boss:update(dt)
         self.tempTime = 0;
     end
 
-    self.xPos = math.sin(self.tempTime) * love.graphics.getPixelWidth() / 2 + love.graphics.getPixelWidth() / 2
+    assert(type(dt) == 'number', "kuksug")
+
+    self.posTween:update(dt)
 end
 
 function Boss:draw()
