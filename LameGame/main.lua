@@ -14,10 +14,10 @@ local fishmoose = {}
 
 local spawnTimer = 0
 
--- Love calbacks
+-- Love callbacks
 function love.load()
     love.window.setTitle("Bullet Hell")
-    love.window.setMode(480, 640, {})
+    love.window.setMode(800, 600, {})
     math.randomseed(os.time());
 
     G_ResourceLoader.loadMeshResource("ShipMesh")
@@ -29,9 +29,9 @@ end
 function love.update(dt)
     -- spawn
     spawnTimer = spawnTimer + 1;
-    if spawnTimer >= 10 then
+    if spawnTimer >= 3 then
         enemyBulletAmount = enemyBulletAmount + 1
-        enemyBullets[enemyBulletAmount] = Bullet:init(math.random(love.graphics.getPixelWidth()), 0, 80 + math.random() * 50, math.random(50) - 115, math.random(10, 15))
+        enemyBullets[enemyBulletAmount] = Bullet:init(math.random(love.graphics.getPixelWidth()), 0, 80 + math.random() * 50, math.random(50) - 115, math.random(5, 6))
         spawnTimer = 0
     end
 
@@ -67,5 +67,6 @@ function love.draw()
         enemyBullets[i]:draw()
     end
 
-    love.graphics.print(love.timer.getFPS(), 10, 10);
+    love.graphics.print("FPS: " .. love.timer.getFPS(), 10, 5);
+    love.graphics.print("Bullet #: " .. #enemyBullets, 10, 20);
 end

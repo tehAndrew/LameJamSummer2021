@@ -71,6 +71,7 @@ function G_ResourceLoader.getResource(resType, resName)
     debug(precondition, type(resType) == "string", "Argument 1 must be of type 'string'.")
     debug(precondition, type(resName) == "string", "Argument 2 must be of type 'string'.")
 
+    debug(assertExpr, G_ResourceLoader[resType] ~= nil, "'" .. resType .. "'" .. " is not a valid type of resource.")
     debug(assertExpr, G_ResourceLoader[resType][resName] ~= nil, resName .. " " .. resType .. " resource has not been loaded.")
 
     return G_ResourceLoader[resType][resName]

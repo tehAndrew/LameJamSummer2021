@@ -1,6 +1,8 @@
 local Model = require("Model")
 local Transform3D = require("Transform3D")
 
+local xRotate, yRotate, zRotate, translate = Transform3D.xRotate, Transform3D.yRotate, Transform3D.zRotate, Transform3D.translate
+
 local Fishmoose = {}
 Fishmoose.__index = Fishmoose
 
@@ -96,14 +98,14 @@ function Fishmoose:draw ()
         return (x * 2 * math.pi) / 360
     end
 
-    self.model:setTransform(Transform3D.init():translate(self.xPos, self.yPos):xRotate(toRad(self.angle2)):yRotate(toRad(self.angle)):zRotate(toRad(self.angle)))
+    self.model:setTransform(translate(self.xPos, self.yPos) * xRotate(toRad(self.angle2)) * yRotate(toRad(self.angle)) * zRotate(toRad(self.angle)))
     self.model:draw()
 end
 
 function Fishmoose:checkCollision (bullet)
     local dist = (self.xPos - bullet.xPos)^2 + (self.yPos - bullet.yPos)^2
 
-    return dist < self.radius^2 + bullet.radius^2
+    return dist < bullet.radius^2
 end
 
 return Fishmoose
