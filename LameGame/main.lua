@@ -33,9 +33,7 @@ function love.update(dt)
     -- Check for potential collisions
     --fishmoose:checkCollision(boss, bossBullets)
     --boss:checkCollision(shipBullets)
-
-    assert(type(dt) == 'number', "Kuksug")
-
+    
     fishmoose:update(dt)
     boss:update(dt)
     --shipProjectiles:update(dt) -- also remove inactive bullets

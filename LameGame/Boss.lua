@@ -20,8 +20,6 @@ function Boss:update(dt)
         self.tempTime = 0;
     end
 
-    assert(type(dt) == 'number', "kuksug")
-
     self.posTween:update(dt)
 end
 
