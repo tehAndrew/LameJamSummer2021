@@ -1,5 +1,6 @@
 local Model = require("Model")
 local Transform3D = require("Transform3D")
+local Tween = require("External/tween/tween")
 
 local xRotate, yRotate, zRotate, translate = Transform3D.xRotate, Transform3D.yRotate, Transform3D.zRotate, Transform3D.translate
 
@@ -10,8 +11,13 @@ function Fishmoose:init (xPos, yPos)
     local obj = {}
     obj.xPos = xPos
     obj.yPos = yPos
+
     obj.radius = 4
     obj.speed = 270
+    obj.xDir = 0
+    obj.yDir = 0
+    obj.horAngleTween = nil
+    obj.verAngleTween = nil
 
     obj.angle = 0
     obj.angle2 = 0
@@ -27,22 +33,23 @@ function Fishmoose:update (dt)
     local upDown = love.keyboard.isDown("up")
     local downDown = love.keyboard.isDown("down")
 
-    local xDir, yDir = 0, 0
+    local xDirPrev, yDirPrev = self.xDir, self.yDir
+    self.xDir, self.yDir = 0, 0
 
     if not (leftDown and rightDown) then
-        if leftDown then xDir = -1
-        elseif rightDown then xDir = 1 end
+        if leftDown then self.xDir = -1
+        elseif rightDown then self.xDir = 1 end
     end
 
     if not (upDown and downDown) then
-        if upDown then yDir = -1
-        elseif downDown then yDir = 1 end
+        if upDown then self.yDir = -1
+        elseif downDown then self.yDir = 1 end
     end
     
-    local xVel, yVel = self.speed * xDir * dt, self.speed * yDir * dt
+    local xVel, yVel = self.speed * self.xDir * dt, self.speed * self.yDir * dt
 
     -- Compensate for diagonal movement
-    if not (xDir == 0 or yDir == 0) then
+    if not (self.xDir == 0 or self.yDir == 0) then
         xVel = xVel / math.sqrt(2)
         yVel = yVel / math.sqrt(2)
     end
@@ -63,31 +70,29 @@ function Fishmoose:update (dt)
     self.xPos = self.xPos + xVel
     self.yPos = self.yPos + yVel
 
-    -- Update rotation
-    if (self.angle > -8) and (xDir > 0) then
-        self.angle = self.angle - 0.8
-    elseif (self.angle < 8) and (xDir < 0) then
-        self.angle = self.angle + 0.8
-    elseif self.angle + 0.8 < 0 then
-        self.angle = self.angle + 0.8
-    elseif self.angle - 0.8 > 0 then
-        self.angle = self.angle - 0.8
-    else
-        self.angle = 0
+    -- dir changed, animate angle
+    if xDirPrev ~= self.xDir then
+        self.horAngleTween = Tween.new(1, self, {angle = self.xDir * 15}, Tween.easing.outExpo)
     end
 
-    if (self.angle2 > -24) and (yDir > 0) then
-        self.angle2 = self.angle2 - 2.4
-    elseif (self.angle2 < 24) and (yDir < 0) then
-        self.angle2 = self.angle2 + 2.4
-    elseif self.angle2 + 2.4 < 0 then
-        self.angle2 = self.angle2 + 2.4
-    elseif self.angle2 - 2.4 > 0 then
-        self.angle2 = self.angle2 - 2.4
-    else
-        self.angle2 = 0
+    if self.horAngleTween then
+        local finished = self.horAngleTween:update(dt)
+        if finished then
+            self.horAngleTween = nil
+        end
     end
 
+    -- dir changed, animate angle
+    if yDirPrev ~= self.yDir then
+        self.verAngleTween = Tween.new(1, self, {angle2 = self.yDir * -30}, Tween.easing.outExpo)
+    end
+ 
+    if self.verAngleTween then
+        local finished = self.verAngleTween:update(dt)
+        if finished then
+            self.verAngleTween = nil
+        end
+    end
 end
 
 function Fishmoose:draw ()
@@ -98,7 +103,7 @@ function Fishmoose:draw ()
         return (x * 2 * math.pi) / 360
     end
 
-    self.model:setTransform(translate(self.xPos, self.yPos) * xRotate(toRad(self.angle2)) * yRotate(toRad(self.angle)) * zRotate(toRad(self.angle)))
+    self.model:setTransform(translate(self.xPos, self.yPos) * xRotate(toRad(self.angle2)) * yRotate(toRad(self.angle)) * zRotate(toRad(-self.angle)))
     self.model:draw()
 end
 
