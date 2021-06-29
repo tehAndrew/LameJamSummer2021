@@ -13,14 +13,16 @@ function Fishmoose:init (xPos, yPos)
     obj.yPos = yPos
 
     obj.radius = 4
-    obj.speed = 270
+    obj.focusSpeed = 190
+    obj.normalSpeed = 280
+
     obj.xDir = 0
     obj.yDir = 0
     obj.horAngleTween = nil
     obj.verAngleTween = nil
 
-    obj.angle = 0
-    obj.angle2 = 0
+    obj.horAngle = 0
+    obj.verAngle = 0
 
     obj.model = Model:init("ShipMesh")
 
@@ -32,6 +34,7 @@ function Fishmoose:update (dt)
     local rightDown = love.keyboard.isDown("right")
     local upDown = love.keyboard.isDown("up")
     local downDown = love.keyboard.isDown("down")
+    local zDown = love.keyboard.isDown("z")
 
     local xDirPrev, yDirPrev = self.xDir, self.yDir
     self.xDir, self.yDir = 0, 0
@@ -45,8 +48,11 @@ function Fishmoose:update (dt)
         if upDown then self.yDir = -1
         elseif downDown then self.yDir = 1 end
     end
-    
-    local xVel, yVel = self.speed * self.xDir * dt, self.speed * self.yDir * dt
+
+    local speed = self.normalSpeed
+    if zDown then speed = self.focusSpeed end
+
+    local xVel, yVel = speed * self.xDir * dt, speed * self.yDir * dt
 
     -- Compensate for diagonal movement
     if not (self.xDir == 0 or self.yDir == 0) then
@@ -72,7 +78,7 @@ function Fishmoose:update (dt)
 
     -- dir changed, animate angle
     if xDirPrev ~= self.xDir then
-        self.horAngleTween = Tween.new(1, self, {angle = self.xDir * 15}, Tween.easing.outExpo)
+        self.horAngleTween = Tween.new(1.2, self, {horAngle = self.xDir * 20}, Tween.easing.outExpo)
     end
 
     if self.horAngleTween then
@@ -84,7 +90,7 @@ function Fishmoose:update (dt)
 
     -- dir changed, animate angle
     if yDirPrev ~= self.yDir then
-        self.verAngleTween = Tween.new(1, self, {angle2 = self.yDir * -30}, Tween.easing.outExpo)
+        self.verAngleTween = Tween.new(1.2, self, {verAngle = self.yDir * -30}, Tween.easing.outExpo)
     end
  
     if self.verAngleTween then
@@ -103,7 +109,7 @@ function Fishmoose:draw ()
         return (x * 2 * math.pi) / 360
     end
 
-    self.model:setTransform(translate(self.xPos, self.yPos) * xRotate(toRad(self.angle2)) * yRotate(toRad(self.angle)) * zRotate(toRad(-self.angle)))
+    self.model:setTransform(translate(self.xPos, self.yPos) * xRotate(toRad(self.verAngle)) * yRotate(toRad(self.horAngle)) * zRotate(toRad(-self.horAngle * 0.5)))
     self.model:draw()
 end
 
