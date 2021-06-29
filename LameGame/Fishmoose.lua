@@ -78,7 +78,7 @@ function Fishmoose:update (dt)
 
     -- dir changed, animate angle
     if xDirPrev ~= self.xDir then
-        self.horAngleTween = Tween.new(1.2, self, {horAngle = self.xDir * 20}, Tween.easing.outExpo)
+        self.horAngleTween = Tween.new(1.2, self, {horAngle = self.xDir * 0.35}, Tween.easing.outExpo)
     end
 
     if self.horAngleTween then
@@ -90,7 +90,7 @@ function Fishmoose:update (dt)
 
     -- dir changed, animate angle
     if yDirPrev ~= self.yDir then
-        self.verAngleTween = Tween.new(1.2, self, {verAngle = self.yDir * -30}, Tween.easing.outExpo)
+        self.verAngleTween = Tween.new(1.2, self, {verAngle = self.yDir * -0.52}, Tween.easing.outExpo)
     end
  
     if self.verAngleTween then
@@ -105,11 +105,7 @@ function Fishmoose:draw ()
     love.graphics.setColor(1, 1, 1)
     love.graphics.circle("fill", self.xPos, self.yPos, self.radius, 9)
 
-    local toRad = function(x)
-        return (x * 2 * math.pi) / 360
-    end
-
-    self.model:setTransform(translate(self.xPos, self.yPos) * xRotate(toRad(self.verAngle)) * yRotate(toRad(self.horAngle)) * zRotate(toRad(-self.horAngle * 0.5)))
+    self.model:setTransform(translate(self.xPos, self.yPos) * xRotate(self.verAngle) * yRotate(self.horAngle) * zRotate(-self.horAngle * 0.5))
     self.model:draw()
 end
 
