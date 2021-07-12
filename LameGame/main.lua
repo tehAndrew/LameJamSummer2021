@@ -4,10 +4,11 @@ require("G_ResourceLoader")
 G_Debug = true
 
 -- Imports
-local Bullet = require("Bullet")
+local BossProjectiles = require("BossProjectiles")
 local Fishmoose = require("Fishmoose")
 local Boss = require("Boss")
 
+local bossProjectiles = {}
 local fishmoose = {}
 local boss = {}
 
@@ -20,13 +21,13 @@ function love.load()
     G_ResourceLoader.loadMeshResource("ShipMesh")
     G_ResourceLoader.loadShaderResource("MeshShader")
 
-    fishmoose = Fishmoose:init(love.graphics.getPixelWidth() / 2, love.graphics.getPixelHeight() - 100);
-    boss = Boss:init(love.graphics.getPixelWidth() / 2, 100);
+    bossProjectiles = BossProjectiles.init()
+
+    fishmoose = Fishmoose.init(love.graphics.getPixelWidth() / 2, love.graphics.getPixelHeight() - 100)
+    boss = Boss.init(love.graphics.getPixelWidth() / 2, 150, bossProjectiles)
 
     --shipProjectiles = shipProjectiles:init()
-    --bossProjectiles = bossProjectiles:init()
-    --ship = ship:init(love.graphics.getPixelWidth() / 2, love.graphics.getPixelHeight() - 100, shipProjectiles);
-    --boss = Boss:init(love.graphics.getPixelWidth() / 2, 100, bossProjectiles);
+    --ship = ship:init(love.graphics.getPixelWidth() / 2, love.graphics.getPixelHeight() - 100, shipProjectiles)
 end
 
 function love.update(dt)
@@ -37,14 +38,15 @@ function love.update(dt)
     fishmoose:update(dt)
     boss:update(dt)
     --shipProjectiles:update(dt) -- also remove inactive bullets
-    --bossProjectiles:update(dt) -- also remove inactive bullets
+    bossProjectiles:update(dt) -- also remove inactive bullets
 end
 
 function love.draw()
     fishmoose:draw()
     boss:draw()
     --shipProjectiles:draw()
-    --bossProjectiles:draw()
+    bossProjectiles:draw()
 
     love.graphics.print("FPS: " .. love.timer.getFPS(), 10, 5);
+    love.graphics.print("Bos projectiles: " .. #bossProjectiles.projectiles, 10, 15);
 end

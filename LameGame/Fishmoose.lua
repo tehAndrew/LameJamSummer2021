@@ -7,7 +7,7 @@ local xRotate, yRotate, zRotate, translate = Transform3D.xRotate, Transform3D.yR
 local Fishmoose = {}
 Fishmoose.__index = Fishmoose
 
-function Fishmoose:init (xPos, yPos)
+function Fishmoose.init(xPos, yPos)
     local obj = {}
     obj.xPos = xPos
     obj.yPos = yPos
