@@ -22,7 +22,7 @@ function Test.debug(f, ...)
     genericAssert(type(f) == "function", "Arg 1 must be of type 'function'.")
 
     local args = {...}
-    f(table.unpack(args)) -- TODO find alternative to unpack as it is deprecated
+    f(unpack(args)) -- TODO find alternative to unpack as it is deprecated
 end
 
 -- Throw error with message 'errorMsg' if boolean 'expr' is false.
