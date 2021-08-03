@@ -1,5 +1,6 @@
 -- Globals
 require("G_ResourceLoader")
+require("G_DanmakuPatternGenerator")
 
 G_Debug = true
 
@@ -7,64 +8,32 @@ G_Debug = true
 local BossProjectiles = require("BossProjectiles")
 local Fishmoose = require("Fishmoose")
 local Boss = require("Boss")
-local DanmakuGenerator = require("DanmakuGenerator")
 
 local bossProjectiles = {}
 local fishmoose = {}
 local boss = {}
+local danmaku = {}
 local attackScript = {
-    actionList = {
-        {
-            action = "repeat",
-            args = {
-                times = 3,
-                actionList = {
-                    {
-                        action = "repeat",
-                        args = {
-                            times = 3,
-                            actionList = {
-                                {
-                                    action = "fire",
-                                    args = {
-                                        x = 400, y = 0, speed = 200, dir = -math.pi / 2 + 0.4, radius = 10
-                                    }
-                                },
-                                {
-                                    action = "delay",
-                                    args = {waitTime = 0.05}
-                                },
-                                {
-                                    action = "fire",
-                                    args = {
-                                        x = 400, y = 0, speed = 200, dir = -math.pi / 2 - 0.4, radius = 10
-                                    }
-                                }
-                            }
-                        }
-                    },
-                    {
-                        action = "delay",
-                        args = {waitTime = 0.2}
-                    }
-                }
-            }
+    main = {
+        vars = {
+            theta = "0"
         },
-        {
-            action = "fire",
-            args = {
-                x = 400, y = 0, speed = 350, dir = -math.pi / 2, radius = 60
+        actionList = {
+            {
+                action = "fire",
+                args = {x = "100", y = "100", speed = "20", dir = "2", radius = "10"}
+            },
+            {
+                action = "setVar",
+                args = {name = "theta", value = "0.2"}
+            },
+            {
+                action = "delay",
+                args = {waitTime = "1"}
             }
-        },
-        {
-            action = "delay",
-            args = {waitTime = 1}
         }
     }
 }
-local attackFun
-local attackCo
-local msg = ""
 
 -- Love callbacks
 function love.load()
@@ -78,10 +47,10 @@ function love.load()
     bossProjectiles = BossProjectiles.init()
 
     fishmoose = Fishmoose.init(love.graphics.getPixelWidth() / 2, love.graphics.getPixelHeight() - 100)
-    local dg = DanmakuGenerator.init(bossProjectiles)
     --boss = Boss.init(love.graphics.getPixelWidth() / 2, 150, bossProjectiles)
 
-    attackFun = dg:buildAttack(attackScript)
+    G_DanmakuPatternGenerator.fireCallback = function(x, y, speed, dir, radius) bossProjectiles:spawnBullet(x, y, speed, dir, radius) end
+    danmaku = G_DanmakuPatternGenerator.buildAttack(attackScript)
 
     --shipProjectiles = shipProjectiles:init()
     --ship = ship:init(love.graphics.getPixelWidth() / 2, love.graphics.getPixelHeight() - 100, shipProjectiles)
@@ -91,14 +60,7 @@ function love.update(dt)
     -- Check for potential collisions
     --fishmoose:checkCollision(boss, bossBullets)
     --boss:checkCollision(shipBullets)
-    if msg == "" then
-        attackCo = coroutine.create(attackFun)
-        _, msg = coroutine.resume(attackCo) -- start attackCo
-    elseif msg == "delay" then
-        _, msg = coroutine.resume(attackCo, dt) -- send dt to delay
-    elseif msg == "end" then
-        msg = ""
-    end
+    danmaku:update(dt)
     
     fishmoose:update(dt)
     --boss:update(dt)
