@@ -1,4 +1,3 @@
--- Seems to be faster to precompute this than using string.byte on the fly.
 local byteToCharLookupTable = {
     [string.byte(" ")] = " ",
     [string.byte("$")] = "$",
@@ -6,6 +5,8 @@ local byteToCharLookupTable = {
     [string.byte("-")] = "-",
     [string.byte("*")] = "*",
     [string.byte("/")] = "/",
+    [string.byte("(")] = "(",
+    [string.byte(")")] = ")",
     [string.byte("0")] = "0",
     [string.byte("1")] = "1",
     [string.byte("2")] = "2",
@@ -70,13 +71,13 @@ local byteToCharLookupTable = {
     [string.byte("Z")] = "Z"
 }
 
-local function exprStrToCharTable(expr)
+local function createCharList(expr)
     local byteTable = {string.byte(expr, 1, #expr)}
     local charTable = {}
 
     for i = 1, #byteTable do
         local char = byteToCharLookupTable[byteTable[i]]
-        if (char == nil) then error("Error: illegal char used in expression " .. expr .. " at index " .. i .. ".") end
+        if (char == nil) then error("Error: illegal char used in expression '" .. expr .. "' at index " .. i .. ".") end
 
         charTable[i] = char
     end
@@ -84,22 +85,110 @@ local function exprStrToCharTable(expr)
     return charTable
 end
 
-local function formString(charTable)
-    local str = ""
-
-    for i = 1, #charTable do
-        str = str .. charTable[i]
+local function tokenizeExpr(expr)
+    local charList = createCharList(expr)
+    
+    local tokenList = {"("}
+    
+    for i = 1, #charList do
+        local char = charList[i]
+        
+        if char == "+" or char == "*" or char == "/" or char == "(" or char == ")" then
+            tokenList[#tokenList + 1] = char
+        elseif char == "-" then
+            -- Identify if '-'-op is unary or binary. It is unary if
+            -- it is the first char in the expression, if it is preceeded
+            -- by a left parenthesis or if it is preceeded by another operator.
+            local prevToken = tokenList[#tokenList]
+            local startsExpr = #tokenList == 0
+            local preceededByOp = prevToken == "+" or prevToken == "*" or prevToken == "/" or prevToken == "-"
+            local preceededByLeftPar = prevToken == "("
+            if startsExpr or preceededByOp or preceededByLeftPar then
+                tokenList[#tokenList + 1] = "~"
+            else
+                tokenList[#tokenList + 1] = char
+            end
+        elseif tonumber(char) ~= nil then
+            local prevToken = tokenList[#tokenList]
+            if tonumber(prevToken) ~= nil then
+                tokenList[#tokenList] = prevToken .. char
+            else
+                tokenList[#tokenList + 1] = char
+            end
+        else -- If variable
+            
+        end
     end
-
-    return str
+    
+    tokenList[#tokenList + 1] = ")"
+    
+    return tokenList
 end
 
-local function tokenizeExpr(expr)
-    local charTable = exprStrToCharTable(expr)
+local function prec(op)
+    local precedence
     
-    local tokens = {}
-
-    for i = 1, #charTable do
-        
+    if (op == "~") then
+        precedence = 3
+    elseif (op == "*" or op == "/") then
+        precedence = 2
+    elseif (op == "+" or op == "-") then
+        precedence = 1
+    else
+        error("Op must be an operator")
     end
+    
+    return precedence
+end
+
+local function isOp(token)
+   return token == "+" or token == "-" or token == "*" or token == "/" or token == "~"
+end
+
+local function isLeftAss(op)
+   return op ~= "~" -- the only right-associative op used.
+end
+
+-- TODO implement support for variables
+-- TODO try to save rehashes by implementing my own size var
+-- Convert infix to postfix using the shunting-yard algorithm
+local function infixToPostfix(infixTokens)
+    local postfix = {}
+    local opStack = {}
+    
+    for i = 0, #infixTokens do
+        local token = infixTokens[i]
+        
+        if token == "(" then
+            opStack[#opStack + 1] = token
+        elseif isOp(token) then
+            while isOp(opStack[#opStack]) and
+                (
+                    prec(opStack[#opStack]) > prec(token) or
+                    (
+                        prec(opStack[#opStack]) == prec(token) and
+                        isLeftAss(token)
+                    )
+                )
+            do
+                postfix[#postfix + 1] = opStack[#opStack]
+                opStack[#opStack] = nil
+            end
+            
+            opStack[#opStack + 1] = token
+        elseif token == ")" then
+            while opStack[#opStack] ~= "(" do
+                if (opStack[#opStack] == nil) then error("Mismatched parenthesis.") end
+
+                postfix[#postfix + 1] = opStack[#opStack]
+                opStack[#opStack] = nil
+            end
+
+            opStack[#opStack] = nil -- Pop the "(" that inevitably now must be at the top
+        else
+            postfix[#postfix + 1] = tonumber(token) -- can only be a number
+        end
+    end
+    
+    return postfix
 end
