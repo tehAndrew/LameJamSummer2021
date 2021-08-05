@@ -101,7 +101,7 @@ local function tokenizeExpr(expr)
             -- by a left parenthesis or if it is preceeded by another operator.
             local prevToken = tokenList[#tokenList]
             local startsExpr = #tokenList == 0
-            local preceededByOp = prevToken == "+" or prevToken == "*" or prevToken == "/" or prevToken == "-"
+            local preceededByOp = prevToken == "+" or prevToken == "*" or prevToken == "/" or prevToken == "-" or prevToken == "~"
             local preceededByLeftPar = prevToken == "("
             if startsExpr or preceededByOp or preceededByLeftPar then
                 tokenList[#tokenList + 1] = "~"
@@ -192,3 +192,65 @@ local function infixToPostfix(infixTokens)
     
     return postfix
 end
+
+local Expression = {}
+Expression.__index = Expression
+
+function Expression.init(exprStr, varTable)
+    local obj = {}
+
+    obj.postfixTokens = infixToPostfix(tokenizeExpr(exprStr))
+    obj.varTable = varTable or {}
+
+    return setmetatable(obj, Expression)
+end
+
+function Expression:evaluate()
+    local operandStack = {}
+
+    for i = 0, #self.postfixTokens do
+        local token = self.postfixTokens[i]
+        local operand1, operand2
+
+        if (token == "+") then
+            operand1 = operandStack[#operandStack]
+            operandStack[#operandStack] = nil
+            operand2 = operandStack[#operandStack]
+            operandStack[#operandStack] = nil
+
+            operandStack[#operandStack + 1] = operand2 + operand1
+        elseif (token == "-") then
+            operand1 = operandStack[#operandStack]
+            operandStack[#operandStack] = nil
+            operand2 = operandStack[#operandStack]
+            operandStack[#operandStack] = nil
+    
+            operandStack[#operandStack + 1] = operand2 - operand1
+        elseif (token == "*") then
+            operand1 = operandStack[#operandStack]
+            operandStack[#operandStack] = nil
+            operand2 = operandStack[#operandStack]
+            operandStack[#operandStack] = nil
+    
+            operandStack[#operandStack + 1] = operand2 * operand1
+        elseif (token == "/") then
+            operand1 = operandStack[#operandStack]
+            operandStack[#operandStack] = nil
+            operand2 = operandStack[#operandStack]
+            operandStack[#operandStack] = nil
+    
+            operandStack[#operandStack + 1] = operand2 / operand1
+        elseif (token == "~") then
+            operand1 = operandStack[#operandStack]
+            operandStack[#operandStack] = nil
+    
+            operandStack[#operandStack + 1] = -operand1
+        else
+            operandStack[#operandStack + 1] = token
+        end
+    end
+
+    return operandStack[1]
+end
+
+return Expression
