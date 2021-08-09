@@ -1,4 +1,7 @@
 --[[ Expression.lua
+
+    TODO: Go through all functions and clean up.
+    TODO: clean the evaluate function.
 --]]
 
 --[[
