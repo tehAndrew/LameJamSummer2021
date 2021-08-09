@@ -1,3 +1,11 @@
+--[[ Expression.lua
+--]]
+
+--[[
+    Tokenization of expression strings ---------------------------------------------------------------------
+--]]
+
+-- Converting bytes to single character strings this way is faster than using string.char(...).
 local byteToCharLookupTable = {
     [string.byte(" ")] = " ",
     [string.byte("$")] = "$",
@@ -7,6 +15,7 @@ local byteToCharLookupTable = {
     [string.byte("/")] = "/",
     [string.byte("(")] = "(",
     [string.byte(")")] = ")",
+    [string.byte(".")] = ".",
     [string.byte("0")] = "0",
     [string.byte("1")] = "1",
     [string.byte("2")] = "2",
@@ -71,13 +80,16 @@ local byteToCharLookupTable = {
     [string.byte("Z")] = "Z"
 }
 
-local function createCharList(expr)
-    local byteTable = {string.byte(expr, 1, #expr)}
+-- Splits a string into a list of single character strings.
+local function createCharList(exprStr)
+    if (type(exprStr) ~= "string") then error("exprStr must be of type 'string'.") end
+    
+    local byteTable = {string.byte(exprStr, 1, #exprStr)}
     local charTable = {}
 
     for i = 1, #byteTable do
         local char = byteToCharLookupTable[byteTable[i]]
-        if (char == nil) then error("Error: illegal char used in expression '" .. expr .. "' at index " .. i .. ".") end
+        if (char == nil) then error("illegal char used in expression '" .. exprStr .. "' at index " .. i .. ".") end
 
         charTable[i] = char
     end
@@ -85,38 +97,57 @@ local function createCharList(expr)
     return charTable
 end
 
-local function tokenizeExpr(expr)
-    local charList = createCharList(expr)
+-- Tokenises exprStr. Negation is identified by the function. This function does not care whether the expression is valid or not.
+local function tokenizeExpr(exprStr)
+    local charList = createCharList(exprStr)
     
     local tokenList = {"("}
+
+    local scanningNumber, scanningString = false, false
+    local char, prevToken
     
     for i = 1, #charList do
-        local char = charList[i]
+        char = charList[i]
+        prevToken = tokenList[#tokenList]
+
+        -- Stop scanning for numbers or strings if char is a special character or " "
+        if char == "+" or char == "*" or char == "-" or char == "/" or char == "(" or char == ")" or char == "~" or char == "$" or char == " " then
+            scanningNumber, scanningString = false, false
+        end
         
-        if char == "+" or char == "*" or char == "/" or char == "(" or char == ")" then
+        if char == "+" or char == "*" or char == "/" or char == "(" or char == ")" or char == "$" then
             tokenList[#tokenList + 1] = char
         elseif char == "-" then
-            -- Identify if '-'-op is unary or binary. It is unary if
-            -- it is the first char in the expression, if it is preceeded
-            -- by a left parenthesis or if it is preceeded by another operator.
-            local prevToken = tokenList[#tokenList]
             local startsExpr = #tokenList == 0
             local preceededByOp = prevToken == "+" or prevToken == "*" or prevToken == "/" or prevToken == "-" or prevToken == "~"
             local preceededByLeftPar = prevToken == "("
+
             if startsExpr or preceededByOp or preceededByLeftPar then
                 tokenList[#tokenList + 1] = "~"
             else
                 tokenList[#tokenList + 1] = char
             end
-        elseif tonumber(char) ~= nil then
-            local prevToken = tokenList[#tokenList]
-            if tonumber(prevToken) ~= nil then
+        elseif char == "." then
+            if scanningNumber then
                 tokenList[#tokenList] = prevToken .. char
             else
                 tokenList[#tokenList + 1] = char
+                scanningNumber, scanningString = true, false
             end
-        else -- If variable
-            
+        elseif tonumber(char) ~= nil then
+            if scanningNumber or scanningString then
+                tokenList[#tokenList] = prevToken .. char
+            else
+                tokenList[#tokenList + 1] = char
+                scanningNumber, scanningString = true, false
+            end
+        elseif char ~= " " then
+            if scanningString then
+                tokenList[#tokenList] = prevToken .. char
+            else
+                tokenList[#tokenList + 1] = char
+                scanningNumber, scanningString = false, true
+            end
         end
     end
     
@@ -125,10 +156,15 @@ local function tokenizeExpr(expr)
     return tokenList
 end
 
+--[[
+    Infix to postfix conversion ----------------------------------------------------------------------------
+--]]
+
+-- Returns the precedence of an operator. Use to compare operators.
 local function prec(op)
     local precedence
     
-    if (op == "~") then
+    if (op == "~" or op == "$") then
         precedence = 3
     elseif (op == "*" or op == "/") then
         precedence = 2
@@ -141,23 +177,86 @@ local function prec(op)
     return precedence
 end
 
+-- Returns whether a token is an unary operator or not.
+local function isBinaryOp(token)
+    return token == "+" or token == "-" or token == "*" or token == "/"
+ end
+
+-- Returns whether a token is an operator or not.
 local function isOp(token)
-   return token == "+" or token == "-" or token == "*" or token == "/" or token == "~"
+   return isBinaryOp(token) or token == "~" or token == "$"
 end
 
+-- Returns whether an operator is left-associative or not.
 local function isLeftAss(op)
-   return op ~= "~" -- the only right-associative op used.
+   return op ~= "~" and op ~= "$"
 end
 
--- TODO implement support for variables
--- TODO try to save rehashes by implementing my own size var
--- Convert infix to postfix using the shunting-yard algorithm
-local function infixToPostfix(infixTokens)
+--[[
+    Validates an infix expression.
+  
+    Requires a list of string tokens. Throws an error for infix expressions that are not
+    well-formed.
+
+    An infix expression is seen as well-formed by this function if:
+        - The following criteria are true for all tokens:
+            - if the token is the first token in the list, then it must be a constant operand,
+              a unary operator or a '('.
+            - if the token is preceeded by a binary operator, a '~' or a '(', then it must be
+              a constant operand, unary operator or a '('.
+            - if the token is preceeded by a constant operator, variable name or a ')', then
+              it must be a binary operator or a ')'.
+            - if the token is preceeded by a '$', then it must be a variable name.
+        - For every '(' there is a matching ')'
+        - Valid variable names can only contain alphanumerical characters and can not start
+          with a numerical character. (This is a side effect of how expressions strings are
+          tokenized in the tokenizeExpr function).
+--]]
+local function validateInfix(infixTokens)
+    local parStack = {}
+    local token, prevToken = nil, nil
+
+    for i = 1, #infixTokens do
+        prevToken = token
+        token = infixTokens[i]
+
+        if prevToken == nil or prevToken == '(' or isBinaryOp(prevToken) or prevToken == '~' then
+            if tonumber(token) == nil and token ~= '~' and token ~= '$' and token ~= '(' then
+                if prevToken == nil then error("'" .. token .. "' can not start an expression") end
+                error("'" .. token .. "' can not be preceeded by '" .. prevToken .. "'")
+            end
+        elseif prevToken == '$' then
+            if tonumber(token) ~= nil or isOp(token) or token == '(' or token == ')' then
+                error("'" .. token .. "' is not a valid variable name.")
+            end
+        else -- token is operand, varname or ')'
+            if not isBinaryOp(token) and token ~= ')' then 
+                error("'" .. token .. "' can not be preceeded by '" .. prevToken .. "'") 
+            end
+        end
+
+        if token == '(' then
+            parStack[#parStack + 1] = token
+        elseif token == ')' then
+            if #parStack == 0 then error('mismatched parenthesis') end
+            parStack[#parStack] = nil
+        end
+    end
+
+    if #parStack ~= 0 then error('mismatched parenthesis') end
+end
+
+-- Convert infix to postfix using the shunting-yard algorithm. Assumes infix is well formed.
+local function infixToPostfix(infixStr)
+    local infixTokens = tokenizeExpr(infixStr)
+    validateInfix(infixTokens)
+    
     local postfix = {}
     local opStack = {}
     
+    local token
     for i = 0, #infixTokens do
-        local token = infixTokens[i]
+        token = infixTokens[i]
         
         if token == "(" then
             opStack[#opStack + 1] = token
@@ -178,20 +277,24 @@ local function infixToPostfix(infixTokens)
             opStack[#opStack + 1] = token
         elseif token == ")" then
             while opStack[#opStack] ~= "(" do
-                if (opStack[#opStack] == nil) then error("Mismatched parenthesis.") end
-
                 postfix[#postfix + 1] = opStack[#opStack]
                 opStack[#opStack] = nil
             end
 
             opStack[#opStack] = nil -- Pop the "(" that inevitably now must be at the top
         else
-            postfix[#postfix + 1] = tonumber(token) -- can only be a number
+            if tonumber(token) ~= nil then postfix[#postfix + 1] = tonumber(token)
+            else postfix[#postfix + 1] = token end
         end
     end
     
+    
     return postfix
 end
+
+--[[
+    Expression metatable -----------------------------------------------------------------------------------
+--]]
 
 local Expression = {}
 Expression.__index = Expression
@@ -199,7 +302,7 @@ Expression.__index = Expression
 function Expression.init(exprStr, varTable)
     local obj = {}
 
-    obj.postfixTokens = infixToPostfix(tokenizeExpr(exprStr))
+    obj.postfixTokens = infixToPostfix(exprStr)
     obj.varTable = varTable or {}
 
     return setmetatable(obj, Expression)
@@ -245,6 +348,15 @@ function Expression:evaluate()
             operandStack[#operandStack] = nil
     
             operandStack[#operandStack + 1] = -operand1
+        elseif (token == "$") then
+            local variableName = operandStack[#operandStack]
+            operandStack[#operandStack] = nil
+
+            if self.varTable[variableName] == nil then
+                error("variable '" .. variableName .. "' is not defined.")
+            end
+    
+            operandStack[#operandStack + 1] = self.varTable[variableName]
         else
             operandStack[#operandStack + 1] = token
         end
