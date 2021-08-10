@@ -311,7 +311,7 @@ function Expression.init(exprStr, varTable)
     return setmetatable(obj, Expression)
 end
 
-function Expression:evaluate()
+function Expression:eval()
     local operandStack = {}
 
     for i = 0, #self.postfixTokens do

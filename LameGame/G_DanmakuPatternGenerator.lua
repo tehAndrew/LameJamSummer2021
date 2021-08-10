@@ -1,4 +1,4 @@
--- VAD SOM HÄNDE IGÅR: z laddas ej in i scope och x och y hamnar på samma ställe.
+-- INTEGRATE Expression.lua TOMORROW!!!!!!!!!!!!!!!!!
 
 --[[
     G_DanmakuPatternGenerator.lua
@@ -48,16 +48,25 @@
         }
     }
 --]]
+local Expression = require("Expression")
 local DanmakuPattern = require("DanmakuPattern")
 
 G_DanmakuPatternGenerator = {}
 G_DanmakuPatternGenerator.fireCallback = function() print("Fire is not implemented.") end
 
+-- Helper ----------
+local function parseArgs(args, state)
+    local newArgs = {}
+    for k, v in pairs(args) do newArgs[k] = Expression.init(v, state) end
+
+    return newArgs
+end
+
 -- Structural building blocks ----------
 local function codeBlock(...)
     local args = {...}
-    for _, action in ipairs(args) do
-        action()
+    for _, f in ipairs(args) do
+        f()
     end
 end
 
@@ -68,7 +77,7 @@ end
 
 -- State building blocks ----------
 local function setVariable(state, args)
-    state[args.name] = tonumber(args.value)
+    state[args.name] = Expression.init(args.value, state):eval()
 end
 
 -- Functional building blocks ----------
@@ -92,26 +101,26 @@ local function delay(args)
 end
 
 local function fire(args)
-    G_DanmakuPatternGenerator.fireCallback(tonumber(args.x), tonumber(args.y), tonumber(args.speed), tonumber(args.dir), tonumber(args.radius))
+    G_DanmakuPatternGenerator.fireCallback(args.x:eval(), args.y:eval(), args.speed:eval(), args.dir:eval(), args.radius:eval())
 end
 
 -- Recursive danmaku generation function ----------
 local function buildAttackFromActionList(state, actionList)
     local functions = {}
 
-    for _, actionEntry in ipairs(actionList) do
-        if actionEntry.action == "delay" then
-            table.insert(functions, function() delay(actionEntry.args) end)
-        elseif actionEntry.action == "fire" then
-            table.insert(functions, function() fire(actionEntry.args) end)
-        elseif actionEntry.action == "repeat" then
+    for _, v in ipairs(actionList) do
+        if v.action == "delay" then
+            table.insert(functions, function() delay(v.args) end)
+        elseif v.action == "fire" then
+            table.insert(functions, function() fire(parseArgs(v.args, state)) end)
+        elseif v.action == "repeat" then
             -- Build sub attack function
-            local subAttackBuild = buildAttackFromActionList(state, actionEntry.args.actionList)
+            local subAttackBuild = buildAttackFromActionList(state, v.args.actionList)
             local runnableCode = function() codeBlock(unpack(subAttackBuild)) end
 
-            table.insert(functions, function() repeatBlock(runnableCode, actionEntry.args) end)
-        elseif actionEntry.action == "setVar" then
-            table.insert(functions, function() setVariable(state, actionEntry.args) end)
+            table.insert(functions, function() repeatBlock(runnableCode, v.args) end)
+        elseif v.action == "setVar" then
+            table.insert(functions, function() setVariable(state, v.args) end)
         end
     end
 
@@ -122,12 +131,10 @@ end
 function G_DanmakuPatternGenerator.buildAttack(attack)
     -- build state
     local state = {}
-    for k, v in pairs(attack.main.vars) do
-        state[k] = tonumber(v)
-    end
+    for k, v in pairs(attack.main.vars) do state[k] = Expression.init(v, state):eval() end
 
     -- build attack
     local attackBuild = buildAttackFromActionList(state, attack.main.actionList)
 
-    return DanmakuPattern.init(state, function() entry(unpack(attackBuild)) end)
+    return DanmakuPattern.init(function() entry(unpack(attackBuild)) end)
 end

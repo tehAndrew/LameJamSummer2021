@@ -21,15 +21,27 @@ local attackScript = {
         actionList = {
             {
                 action = "fire",
-                args = {x = "100", y = "100", speed = "20", dir = "2", radius = "10"}
+                args = {x = "400", y = "150", speed = "100", dir = "$theta + 3.14 / 2", radius = "10"}
+            },
+            {
+                action = "fire",
+                args = {x = "400", y = "150", speed = "100", dir = "$theta + 2 * (3.14 / 2)", radius = "10"}
+            },
+            {
+                action = "fire",
+                args = {x = "400", y = "150", speed = "100", dir = "$theta + 3 * (3.14 / 2)", radius = "10"}
+            },
+            {
+                action = "fire",
+                args = {x = "400", y = "150", speed = "100", dir = "$theta + 4 * (3.14 / 2)", radius = "10"}
             },
             {
                 action = "setVar",
-                args = {name = "theta", value = "0.2"}
+                args = {name = "theta", value = "$theta + 0.2"}
             },
             {
                 action = "delay",
-                args = {waitTime = "1"}
+                args = {waitTime = "0.05"}
             }
         }
     }

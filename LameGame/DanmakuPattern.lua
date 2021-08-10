@@ -1,10 +1,9 @@
 local DanmakuPattern = {}
 DanmakuPattern.__index = DanmakuPattern
 
-function DanmakuPattern.init(state, danmakuFunc)
+function DanmakuPattern.init(danmakuFunc)
     local obj = {}
 
-    obj.state = state
     obj.danmakuFunc = danmakuFunc
     
     obj.danmakuCo = nil
