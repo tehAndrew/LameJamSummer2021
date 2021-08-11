@@ -5,6 +5,44 @@
 --]]
 
 --[[
+    Helpers ---------------------------------------------------------------------
+--]]
+
+-- Returns the precedence of an operator. Use to compare operators.
+local function prec(op)
+    local precedence
+    
+    if (op == "~" or op == "$") then
+        precedence = 4
+    elseif (op == "^") then
+        precedence = 3
+    elseif (op == "*" or op == "/" or op == "%") then
+        precedence = 2
+    elseif (op == "+" or op == "-") then
+        precedence = 1
+    else
+        error("Op must be an operator")
+    end
+    
+    return precedence
+end
+
+-- Returns whether a token is an unary operator or not.
+local function isBinaryOp(token)
+    return token == "+" or token == "-" or token == "*" or token == "/" or token == "%" or token == "^"
+ end
+
+-- Returns whether a token is an operator or not.
+local function isOp(token)
+   return isBinaryOp(token) or token == "~" or token == "$"
+end
+
+-- Returns whether an operator is left-associative or not.
+local function isLeftAss(op)
+   return op ~= "~" and op ~= "$" and op ~= "^"
+end
+
+--[[
     Tokenization of expression strings ---------------------------------------------------------------------
 --]]
 
@@ -16,6 +54,8 @@ local byteToCharLookupTable = {
     [string.byte("-")] = "-",
     [string.byte("*")] = "*",
     [string.byte("/")] = "/",
+    [string.byte("%")] = "%",
+    [string.byte("^")] = "^",
     [string.byte("(")] = "(",
     [string.byte(")")] = ")",
     [string.byte(".")] = ".",
@@ -114,15 +154,15 @@ local function tokenizeExpr(exprStr)
         prevToken = tokenList[#tokenList]
 
         -- Stop scanning for numbers or strings if char is a special character or " "
-        if char == "+" or char == "*" or char == "-" or char == "/" or char == "(" or char == ")" or char == "~" or char == "$" or char == " " then
+        if isOp(char) or char == "(" or char == ")" or char == " " then
             scanningNumber, scanningString = false, false
         end
         
-        if char == "+" or char == "*" or char == "/" or char == "(" or char == ")" or char == "$" then
+        if char == "+" or char == "*" or char == "/" or char == "%" or char == "^" or char == "(" or char == ")" or char == "$" then
             tokenList[#tokenList + 1] = char
         elseif char == "-" then
             local startsExpr = #tokenList == 0
-            local preceededByOp = prevToken == "+" or prevToken == "*" or prevToken == "/" or prevToken == "-" or prevToken == "~"
+            local preceededByOp = isOp(prevToken)
             local preceededByLeftPar = prevToken == "("
 
             if startsExpr or preceededByOp or preceededByLeftPar then
@@ -162,38 +202,6 @@ end
 --[[
     Infix to postfix conversion ----------------------------------------------------------------------------
 --]]
-
--- Returns the precedence of an operator. Use to compare operators.
-local function prec(op)
-    local precedence
-    
-    if (op == "~" or op == "$") then
-        precedence = 3
-    elseif (op == "*" or op == "/") then
-        precedence = 2
-    elseif (op == "+" or op == "-") then
-        precedence = 1
-    else
-        error("Op must be an operator")
-    end
-    
-    return precedence
-end
-
--- Returns whether a token is an unary operator or not.
-local function isBinaryOp(token)
-    return token == "+" or token == "-" or token == "*" or token == "/"
- end
-
--- Returns whether a token is an operator or not.
-local function isOp(token)
-   return isBinaryOp(token) or token == "~" or token == "$"
-end
-
--- Returns whether an operator is left-associative or not.
-local function isLeftAss(op)
-   return op ~= "~" and op ~= "$"
-end
 
 --[[
     Validates an infix expression.
@@ -346,6 +354,20 @@ function Expression:eval()
             operandStack[#operandStack] = nil
     
             operandStack[#operandStack + 1] = operand2 / operand1
+        elseif (token == "%") then
+            operand1 = operandStack[#operandStack]
+            operandStack[#operandStack] = nil
+            operand2 = operandStack[#operandStack]
+            operandStack[#operandStack] = nil
+    
+            operandStack[#operandStack + 1] = operand2 % operand1
+        elseif (token == "^") then
+            operand1 = operandStack[#operandStack]
+            operandStack[#operandStack] = nil
+            operand2 = operandStack[#operandStack]
+            operandStack[#operandStack] = nil
+    
+            operandStack[#operandStack + 1] = operand2 ^ operand1
         elseif (token == "~") then
             operand1 = operandStack[#operandStack]
             operandStack[#operandStack] = nil
