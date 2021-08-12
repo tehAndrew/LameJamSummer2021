@@ -220,9 +220,9 @@ end
               it must be a binary operator or a ')'.
             - if the token is preceeded by a '$', then it must be a variable name.
         - For every '(' there is a matching ')'
-        - Valid variable names can only contain alphanumerical characters and can not start
-          with a numerical character. (This is a side effect of how expressions strings are
-          tokenized in the tokenizeExpr function).
+        - Valid variable names can only contain alphanumerical characters and the character
+          '_' and can not start with a numerical character. (This is a side effect of how
+          expressions strings are tokenized in the tokenizeExpr function).
 --]]
 local function validateInfix(infixTokens)
     local parStack = {}
