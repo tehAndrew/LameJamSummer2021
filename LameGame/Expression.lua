@@ -120,7 +120,8 @@ local byteToCharLookupTable = {
     [string.byte("W")] = "W",
     [string.byte("X")] = "X",
     [string.byte("Y")] = "Y",
-    [string.byte("Z")] = "Z"
+    [string.byte("Z")] = "Z",
+    [string.byte("_")] = "_"
 }
 
 -- Splits a string into a list of single character strings.
