@@ -1,5 +1,3 @@
--- INTEGRATE Expression.lua TOMORROW!!!!!!!!!!!!!!!!!
-
 --[[
     G_DanmakuPatternGenerator.lua
 
