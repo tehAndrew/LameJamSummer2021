@@ -2,6 +2,25 @@
 
     TODO: Go through all functions and clean up.
     TODO: clean the evaluate function.
+
+    Both initialization of an expression as well as evaluation of an expression is in O(n)
+
+    Grammar for valid expressions:
+        
+        Expression := Number
+                    | $Variable
+                    | (Expression)
+                    | Expression + Expression
+                    | Expression - Expression
+                    | Expression * Expression
+                    | Expression / Expression
+                    | Expression % Expression
+                    | Expression ^ Expression
+                    | -Expression
+        
+        Where 'Number' is an element of the set of Whole Numbers and 'Variable' is a string defined by
+        the regular expression ([a-zA-Z_]+[0-9]*)+
+
 --]]
 
 --[[
